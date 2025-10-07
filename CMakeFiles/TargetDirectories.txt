@@ -1,0 +1,3 @@
+/home/str/cppvsc/code/facialrecognition/CMakeFiles/face.dir
+/home/str/cppvsc/code/facialrecognition/CMakeFiles/edit_cache.dir
+/home/str/cppvsc/code/facialrecognition/CMakeFiles/rebuild_cache.dir
