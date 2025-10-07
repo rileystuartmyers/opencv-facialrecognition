@@ -3,10 +3,6 @@
 
 #include <opencv2/opencv.hpp>
 
-// uncomment to disable assert()
-// #define NDEBUG
-#include <cassert>
-
 struct coordinates {
 
     int x;
@@ -27,7 +23,13 @@ int main(int argc, char** argv) {
 
     }
     
-    assert(cap.isOpened() && "No video stream detected!");
+    if (!cap.isOpened()) {
+
+        std::cout << "No video stream detected.)" << std::endl;
+        return -1;
+
+    }
+
     while (true) {
 
         cap >> image;
