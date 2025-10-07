@@ -25,7 +25,7 @@ int main(int argc, char** argv) {
     
     if (!cap.isOpened()) {
 
-        std::cout << "No video stream detected.)" << std::endl;
+        std::cout << "No video stream detected." << std::endl;
         return -1;
 
     }
