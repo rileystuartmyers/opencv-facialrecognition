@@ -1,5 +1,4 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/face.dir/link.d"
   "CMakeFiles/face.dir/face.cpp.o"
   "CMakeFiles/face.dir/face.cpp.o.d"
   "face"

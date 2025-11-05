@@ -1,7 +1,9 @@
 #include <iostream>
 #include <vector>
 
+#include <wiringPi.h>
 #include <opencv2/opencv.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
 
 struct coordinates {
 
@@ -12,7 +14,8 @@ struct coordinates {
 
 int main(int argc, char** argv) {
 
-    cv::Mat image;
+    cv::Mat color_image;
+    cv::Mat grey_image;
     cv::namedWindow("Video Player", cv::WINDOW_NORMAL);
     cv::VideoCapture cap(0);
 
@@ -32,8 +35,10 @@ int main(int argc, char** argv) {
 
     while (true) {
 
-        cap >> image;
-        if (image.empty()) {
+        cap >> color_image;
+	cv::cvtColor(color_image, grey_image, cv::COLOR_BGR2GRAY);
+
+	if (grey_image.empty()) {
 
             break;
 
@@ -43,16 +48,16 @@ int main(int argc, char** argv) {
         faceCascade.load("resources/haarcascade_frontalface_default.xml");
         
         std::vector<cv::Rect> faces;
-        faceCascade.detectMultiScale(image, faces, 1.1, 10);
+        faceCascade.detectMultiScale(grey_image, faces, 1.1, 10);
         unsigned short int thickness = 2;
         
         for (int i = 0; i < faces.size(); ++i) {
 
-            cv::rectangle(image, faces[i].tl(), faces[i].br(), cv::Scalar(255, 255, 255), thickness, cv::LINE_8);
+            cv::rectangle(grey_image, faces[i].tl(), faces[i].br(), cv::Scalar(255, 255, 255), thickness, cv::LINE_8);
 
         }
         
-        cv::imshow("Video Player", image);
+        cv::imshow("Video Player", grey_image);
         char c = (char) cv::waitKey(25);
         if (c == 27) {
 
