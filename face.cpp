@@ -5,68 +5,102 @@
 #include <opencv2/opencv.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 
-struct coordinates {
+const char* WINDOW_NAME = "Video Player";
+const char* CASCADE_FILE_PATH = "resources/haarcascade_frontalface_default.xml";
+const unsigned short int RECT_BORDER_THICKNESS = 2;
+bool USE_GREYSCALE_IMAGE = true;
 
+struct coordinates {
     int x;
     int y;
+};
+
+void VideoCapture_CheckForFailure(const cv::VideoCapture& cap) {
+    if (!cap.isOpened()) {
+        throw std::runtime_error("No video stream detected.");
+    }
+}
+
+void ImageCapture_CheckForFailure(const cv::Mat& image) {
+    if (image.empty()) {
+        throw std::runtime_error("Image empty. Exiting...");
+    }
+}
+
+void LoadCascade(cv::CascadeClassifier& faceCascade, const char* FilePath) {
+    if (!faceCascade.load(FilePath)) {
+        throw std::runtime_error("Failed to load cascade file. Exiting...");
+    }
+}
+
+void SetFullscreen(const char* Window_Name) {
+    std::cout << "set to fullscreen" << std::endl;
+    cv::setWindowProperty(Window_Name, cv::WND_PROP_FULLSCREEN, cv::WINDOW_FULLSCREEN);
+}
+
+void SetColor() {
+    USE_GREYSCALE_IMAGE = false;
+}
+
+void ArgumentCheck(int argc, char** argv, const char* Window_Name) {
+
+    for (int i = 1; i < argc; ++i) {
+
+        if (argv[i] == "-f" || argv[i] == "-fullscreen") {
+            SetFullscreen(Window_Name);
+        }
+
+        if (argv[i] == "-c" || argv[i] == "-color") {
+            SetColor();
+        }
+
+    }
 
 };
 
+
+
 int main(int argc, char** argv) {
 
-    cv::Mat color_image;
-    cv::Mat grey_image;
-    cv::namedWindow("Video Player", cv::WINDOW_NORMAL);
+    cv::namedWindow(Window_Name, cv::WINDOW_NORMAL);
+    cv::Mat image;
+    std::vector<cv::Rect> faces;
+    char KeyPressed;
+
     cv::VideoCapture cap(0);
-
-    if (argc == 2 && std::string(argv[1]) == "-f") {
-
-        std::cout << "set to fullscreen" << std::endl;
-        cv::setWindowProperty("Video Player", cv::WND_PROP_FULLSCREEN, cv::WINDOW_FULLSCREEN);
-
-    }
+    VideoCapture_CheckForFailure(cap);
     
-    if (!cap.isOpened()) {
-
-        std::cout << "No video stream detected." << std::endl;
-        return -1;
-
-    }
-
+    cv::CascadeClassifier faceCascade;
+    LoadCascadeFromFile(faceCascade, CASCADE_FILE_PATH);
+    
+    ArgumentCheck(argc, argv, Window_Name);
+    
     while (true) {
 
-        cap >> color_image;
-	cv::cvtColor(color_image, grey_image, cv::COLOR_BGR2GRAY);
+        faces.clear();
 
-	if (grey_image.empty()) {
+        cap >> image;
+        ImageCapture_CheckForFailure(image);
 
-            break;
-
+        if (USE_GREYSCALE_IMAGE == true) {
+            cv::cvtColor(image, image, cv::COLOR_BGR2GRAY);
         }
 
-        cv::CascadeClassifier faceCascade;
-        faceCascade.load("resources/haarcascade_frontalface_default.xml");
-        
-        std::vector<cv::Rect> faces;
-        faceCascade.detectMultiScale(grey_image, faces, 1.1, 10);
-        unsigned short int thickness = 2;
+        faceCascade.detectMultiScale(image, faces, 1.1, 10);
         
         for (int i = 0; i < faces.size(); ++i) {
-
-            cv::rectangle(grey_image, faces[i].tl(), faces[i].br(), cv::Scalar(255, 255, 255), thickness, cv::LINE_8);
-
+            cv::rectangle(image, faces[i].tl(), faces[i].br(), cv::Scalar(255, 255, 255), RECT_BORDER_THICKNESS, cv::LINE_8);
         }
         
-        cv::imshow("Video Player", grey_image);
-        char c = (char) cv::waitKey(25);
-        if (c == 27) {
+        cv::imshow(WINDOW_NAME, image);
 
+        KeyPressed = (char)cv::waitKey(25);
+        if (KeyPressed == 27) {
             break;
-
         }
 
-
     }
+
     return 0;
 
 }
